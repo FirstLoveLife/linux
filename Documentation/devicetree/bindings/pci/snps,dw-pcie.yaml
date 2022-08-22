@@ -28,10 +28,10 @@ allOf:
 
 properties:
   reg:
-    description: |
-      It should contain Data Bus Interface (dbi) and config registers for all
-      versions.
-      For designware core version >= 4.80, it may contain ATU address space.
+    description:
+      At least DBI reg-space and peripheral devices CFG-space outbound window
+      are required for the normal controller work. iATU memory IO region is
+      also required if the space is unrolled (IP-core version >= 4.80a).
     minItems: 2
     maxItems: 5
 
@@ -39,8 +39,22 @@ properties:
     minItems: 2
     maxItems: 5
     items:
-      enum: [ dbi, dbi2, config, atu, atu_dma, app, appl, elbi, mgmt, ctrl,
-              parf, cfg, link, ulreg, smu, mpu, apb, phy ]
+      oneOf:
+        - $ref: /schemas/pci/snps,dw-pcie-common.yaml#/definitions/reg-names
+        - $ref: '#/definitions/reg-names'
+        - deprecated: true
+          oneOf:
+            - description: See native 'elbi/app' CSR region for details.
+              enum: [ apb, mgmt, link, ulreg ]
+            - description: See native 'atu' CSR region for details.
+              enum: [ atu_dma ]
+            - description: Syscon-related CSR regions.
+              enum: [ smu, mpu ]
+    allOf:
+      - contains:
+          const: dbi
+      - contains:
+          const: config
 
   interrupts:
     description:
@@ -74,6 +88,15 @@ required:
   - reg-names
 
 definitions:
+  reg-names:
+    description:
+      DWC PCIe Root Port/Complex specific CSR space names.
+    oneOf:
+      - description:
+          Outbound iATU-capable memory-region which will be used to access
+          the peripheral PCIe devices configuration space.
+        const: config
+
   interrupt-names:
     description:
       DWC PCIe Root Port/Complex specific IRQ signal names.
