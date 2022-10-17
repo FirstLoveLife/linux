@@ -691,6 +691,7 @@ int dw_pcie_ep_init(struct dw_pcie_ep *ep)
 	struct platform_device *pdev = to_platform_device(dev);
 	const struct pci_epc_features *epc_features;
 	struct dw_pcie_ep_func *ep_func;
+	struct device_node *np = dev->of_node;
 
 	INIT_LIST_HEAD(&ep->func_list);
 
